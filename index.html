@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <!--    <link rel="stylesheet" href="dist/css/bootstrap.min.css">-->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+    integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous" />
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="Develop/style.css" />
+
+  <title>Work Day Scheduler</title>
+</head>
+
+<body>
+  <header class="jumbotron">
+    <h1 class="display-3">Work Day Scheduler</h1>
+    <p class="lead">A simple calendar app for scheduling your work day</p>
+    <p id="currentDay" class="lead"></p>
+  </header>
+  <button class="btn btn-warning ml-2 mb-2" id="reset">Reset</button>
+  <div class="container">
+    <div class="col-12 innerContainer">
+
+    </div>
+    <!-- Timeblocks go here -->
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+  <script>
+    days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    $(function () {
+      let date = new Date();
+
+      let currentHour = date.getHours();
+      console.log(currentHour);
+
+      let currentDay = days[date.getDay()];
+      let currentMonth = date.toLocaleString('default', { month: 'long' });
+      let dayNumber = date.getDate() + 'th';
+
+      let dateString = currentDay + ', ' + currentMonth + ' ' + dayNumber;
+      $('#currentDay').text(dateString);
+      let hours = ['12AM', '1AM', '2AM', '3AM', '4AM', '5AM', '6AM', '7AM', '8AM', '9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM', '5PM', '6PM', '7PM', '8PM', '9PM', '10PM', '11PM'];
+      let span = '';
+      let Hour = '';
+      let $span = '';
+      let $row = '';
+      let $textArea = '';
+      let $timeBlockColor;
+      let $Parent;
+      let $button;
+      let $italicTag;
+      for (let i = 0; i < hours.length; i++) {
+        // span += $('<span></span>');
+
+        // let $span = $('<span>').addClass("hour");
+        $row = $('<section>');
+        $span = $('<div>');
+        $textArea = $('<textarea>');
+        $button = $('<button>');
+        $italicTag = $('<i>');
+
+        $italicTag.addClass("fas fa-save");
+        $row.addClass('row time-block');
+        $span.addClass("hour");
+        $textArea.addClass('description');
+        $button.addClass('saveBtn');
+        // $button.addClass('saveBtn i:hover');
+        $span.attr('id', i);
+        // console.log($span.attr('id'));
+
+        $button.append($italicTag);
+        $span.append(hours[i]);
+        $row.append($span);
+        $row.append($textArea);
+        $row.append($button);
+        $('.innerContainer').append($row);
+        if (parseInt($span.attr('id')) === currentHour) {
+
+          $timeBlockColor = $span.next();
+
+
+
+        }
+
+
+      } //End For loop
+      loadValues();
+      // let arr = [];
+      let obj = {};
+      let idValue;
+      let inpValue;
+      let $spanElement;
+      let storeBtn;
+      let getArray;
+      $timeBlockColor.addClass('present').text('Current hour');
+      $Parent = $timeBlockColor.parent();
+      $Parent.prevAll().find("textarea:nth-child(2)").addClass('past');
+      $Parent.nextAll().find("textarea:nth-child(2)").addClass('future');
+      $(document).on('click', 'button', function () {
+        inpValue = $(this).parent().find('textarea:nth-child(2)').val();
+        idValue = $(this).parent().find('div:nth-child(1)').attr('id');
+
+        // idValue = $($spanElement).attr('id');
+        // inpValue = $(this).val();
+        // storeBtn = $('button').eq(idValue);
+
+        console.log(idValue);
+        console.log(inpValue);
+
+
+        let getPreferencesArray = getStorage();
+
+        if (getPreferencesArray == null) {
+          let getPreferencesArray = [];
+          if (inpValue != '') {
+            obj['idVal'] = idValue;
+            obj['inpVal'] = inpValue;
+
+
+            getPreferencesArray.push(obj);
+            setStorage(getPreferencesArray);
+
+          }
+        } else {
+          // getPreferencesArray.forEach(function (element, index) {
+          //   if (element.idVal == idValue && element.inpVal == inpValue) {
+          //     console.log("hello");
+          //     return;
+          //   }
+          // });
+          for (let i = 0; i < getPreferencesArray.length; i++) {
+            if (getPreferencesArray[i].idVal == idValue && getPreferencesArray[i].inpVal == inpValue) {
+              return;
+            }
+
+          }
+          if (inpValue != '') {
+            obj['idVal'] = idValue;
+            obj['inpVal'] = inpValue;
+
+            getPreferencesArray.push(obj);
+            setStorage(getPreferencesArray);
+          }
+        }
+
+      });
+
+      function setStorage(arr) {
+        localStorage.setItem("preferences", JSON.stringify(arr));
+      }
+      function getStorage() {
+        return JSON.parse(localStorage.getItem("preferences"));
+      }
+      function loadValues()  {
+        setValues = getStorage();
+        if(setValues != null) {
+          setValues.forEach(element => {
+            $('textarea').eq(element.idVal).val(element.inpVal);
+            
+          });
+        }
+      }
+      $('#reset').on('click', function(){
+          $('.innerContainer').find('textarea').val('');
+          localStorage.removeItem("preferences");
+      });
+      
+    })
+  </script>
+</body>
+
+</html>
